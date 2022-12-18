@@ -5,13 +5,8 @@
 #define STRGPU_B_ADD_NUMBER_H
 #include "ubench.h"
 #include "opencl_helpers.h"
+#include "cl_utils.h"
 
-const char* programSource =
-"__kernel void vecadd(__global int *A, __global int *B, __global int *C)"
-"{\n"
-"int idx = get_global_id(0);\n"
-"C[idx] = A[idx] + B[idx];\n"
-"}";
 
 struct data {
     size_t size;
@@ -23,7 +18,7 @@ struct data {
 
 UBENCH_F_SETUP(data) {
     PRNT("Setting up data\n");
-    const int elements = 500000000;
+    const int elements = 1024*1024*64;
     size_t size = sizeof(int) * elements;
 
     ubench_fixture->elements = elements;
@@ -47,10 +42,11 @@ UBENCH_F_TEARDOWN(data) {
 
 UBENCH_EX_F(data, add_number_gpu) {
     cl_int status;
-    cl_context context = clCreateContext(NULL, 1, stub->cpu, NULL, NULL, &status);
+    cl_context context = clCreateContext(NULL, 1, stub->gpu, NULL, NULL, &status);
     PRNT("Context created(%d)\n", status);
 
-    cl_command_queue cmdQueue = clCreateCommandQueueWithProperties(context, *stub->cpu, 0, &status);
+//    cl_command_queue cmdQueue = clCreateCommandQueueWithProperties(context, *stub->cpu, 0, &status);
+    cl_command_queue cmdQueue = clCreateCommandQueue(context, *stub->gpu, 0, &status);
     PRNT("Queue created(%d)\n", status);
 
     cl_mem bufA = clCreateBuffer(context, CL_MEM_READ_ONLY, ubench_fixture->size, NULL, &status);
@@ -62,10 +58,12 @@ UBENCH_EX_F(data, add_number_gpu) {
     status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_FALSE, 0, ubench_fixture->size, ubench_fixture->b, 0, NULL, NULL);
     PRNT("Buffers written(%d)\n", status);
 
-    cl_program program = clCreateProgramWithSource(context, 1, &programSource, NULL, &status);
+    char* src = readProgramFile("../benchmark/b_add_number.cl");
+
+    cl_program program = clCreateProgramWithSource(context, 1, &src, NULL, &status);
     PRNT("Program created(%d)\n", status);
 
-    status = clBuildProgram(program, 1, stub->cpu, NULL, NULL, NULL);
+    status = clBuildProgram(program, 1, stub->gpu, NULL, NULL, NULL);
     PRNT("Program built(%d)\n", status);
 
     cl_kernel kernel = clCreateKernel(program, "vecadd", &status);

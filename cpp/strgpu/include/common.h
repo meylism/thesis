@@ -10,7 +10,11 @@
 #define DEVICE 0
 #endif
 
-#include "CL/cl.h"
+#ifdef __APPLE__
+    #include "OpenCL/cl.h"
+#else
+    #include "CL/cl.h"
+#endif
 
 #ifdef DEBUG
 #define PRNT(...) fprintf(stderr, __VA_ARGS__)
