@@ -1,5 +1,3 @@
-#pragma OPENCL EXTENSION cl_intel_printf : enable
-
 __kernel void search_naive_newline(
 __global char *data,
 __global char *pattern,
@@ -32,6 +30,6 @@ __global int *offsets) {
     }
 
     if (found == 0) {
-            result[idx] = 0;
+        result[idx] = 0;
     }
 }

@@ -18,11 +18,10 @@ UBENCH_EX(string_search, naive_newline) {
     int result_size = sizeof(int)*bench_data->numLines;
     int offset_size = result_size;
     int *result = (int*)malloc(result_size);
-    int *result_out = (int*)malloc(result_size);
 
     cl_mem cl_data = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->data_size, NULL, &status);
     cl_mem cl_pattern = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->pattern_size, NULL, &status);
-    cl_mem cl_result = clCreateBuffer(context, CL_MEM_READ_WRITE, bench_data->data_size*sizeof(int), NULL, &status);
+    cl_mem cl_result = clCreateBuffer(context, CL_MEM_READ_WRITE, result_size, NULL, &status);
     cl_mem cl_offsets = clCreateBuffer(context, CL_MEM_READ_ONLY, offset_size, NULL, &status);
     PRNT("Buffers created(%d)\n", status);
 
@@ -59,13 +58,14 @@ UBENCH_EX(string_search, naive_newline) {
     UBENCH_DO_BENCHMARK() {
         status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, globalSize, conf->localSize, 0, NULL, NULL);
         PRNT("Queued kernel(%d)\n", status);
+        clFinish(cmdQueue);
 
-        status = clEnqueueReadBuffer(cmdQueue, cl_result, CL_TRUE, 0, result_size, result_out, 0, NULL, NULL);
+        status = clEnqueueReadBuffer(cmdQueue, cl_result, CL_TRUE, 0, result_size, result, 0, NULL, NULL);
         PRNT("Read resulting buffer(%d)\n", status);
     }
     int x=0, i=0;
     while (i < bench_data->numLines) {
-        if (result_out[i] == 1) x++;
+        if (result[i] == 1) x++;
         i++;
     }
     PRNT("Occurrences %d\n", x);
@@ -80,7 +80,6 @@ UBENCH_EX(string_search, naive_newline) {
     clReleaseContext(context);
 
     free(result);
-    free(result_out);
 
     PRNT("Freed resources\n");
 }
