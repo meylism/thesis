@@ -13,6 +13,8 @@ UBENCH_STATE();
 //#include "b_add_number.h"
 //#include "b_string_search_naive.h"
 #include "b_string_search_naive_newline.h"
+#include "b_string_search_naive_register.h"
+#include "b_string_search_naive_split.h"
 
 // Benchmarks - end
 
@@ -59,11 +61,12 @@ configuration* init_conf(opencl_stub *lstub) {
     // uncomment corresponding device to select
     // cpu
     lconf->device = lstub->cpu;
-    lconf->localSize[0] = 8;
+    lconf->localSize[0] = 10;
 
     // gpu
 //    lconf->device = lstub->gpu;
-//    lconf->localSize[0] = 50;
+//    lconf->localSize[0] = 100;
+//    lconf->localSize[0] = 32;
 
     return lconf;
 }
@@ -84,33 +87,20 @@ benchmark_data * load_benchmark_data(const char *filepath, const char *pattern) 
     b_data->pattern_size = b_data->pattern_len*sizeof(char);
 
     int numLines;
-    b_data->offsets = splitByNewlineAndCalculateOffsets(b_data->data, &numLines);
+    splitByNewlineAndCalculateOffsets2(b_data->data, &numLines, b_data);
     b_data->numLines = numLines;
 
-
-//    for (int i=0; i<numLines-1; i++){
-//        int begin, end, j;
-//        // first line
-//        if (i == 0) {
-//            begin = 0;
-//        } else {
-//            begin = b_data->offsets[i-1]+1;
-//        }
-//        end = b_data->offsets[i];
-//        for (int j=begin; j<=end; j++) {
-//            PRNT("%c", b_data->data[j]);
-//        }
-//        PRNT("\n\n");
-////        PRNT("%d ", b_data->offsets[i]);
+//    for(int i=0; i<numLines-90000; i++) {
+//        PRNT("%d-%d ", b_data->start_indices[i], b_data->offsets[i]);
 //    }
 
-//    b_data->dataByLine = splitByNewline(b_data->data, &numLines);
     return b_data;
 }
 
 void free_benchmark_data(benchmark_data *b_data) {
     free(b_data->data);
     free(b_data->offsets);
+    free(b_data->start_indices);
     free(b_data);
 }
 

@@ -18,7 +18,8 @@ typedef struct benchmark_data {
     char *pattern;
     long pattern_len;
     long pattern_size;
-    int *offsets;
+    int *offsets; // end incides
+    int *start_indices;
 //    char** dataByLine;
     long numLines;
 

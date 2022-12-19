@@ -1,12 +1,12 @@
-#ifndef STRGPU_B_STRING_SEARCH_NAIVE_H
-#define STRGPU_B_STRING_SEARCH_NAIVE_H
+#ifndef STRGPU_B_STRING_SEARCH_NAIVE_REGISTER_H
+#define STRGPU_B_STRING_SEARCH_NAIVE_REGISTER_H
 
 #include "ubench.h"
 #include "opencl_helpers.h"
 #include "cl_utils.h"
 
 
-UBENCH_EX(string_search, naive_newline) {
+UBENCH_EX(string_search, naive_newline_register) {
     printf("\t########## Benchmark - String Search Naive Newline ##########\n");
     cl_int status;
     cl_context context = clCreateContext(NULL, 1, conf->device, NULL, NULL, &status);
@@ -18,7 +18,7 @@ UBENCH_EX(string_search, naive_newline) {
     int result_size = sizeof(int)*bench_data->numLines;
     int offset_size = result_size;
     int *result = (int*)malloc(result_size);
-
+     
 
     cl_mem cl_data = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->data_size, NULL, &status);
     cl_mem cl_pattern = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->pattern_size, NULL, &status);
@@ -32,7 +32,7 @@ UBENCH_EX(string_search, naive_newline) {
     status = clEnqueueWriteBuffer(cmdQueue, cl_offsets, CL_FALSE, 0, offset_size, bench_data->offsets, 0, NULL, NULL);
     PRNT("Buffers written(%d)\n", status);
 
-    char* src = readProgramFile("../benchmark/b_string_search_naive_newline.cl");
+    char* src = readProgramFile("../benchmark/b_string_search_naive_register.cl");
 
     cl_program program = clCreateProgramWithSource(context, 1, &src, NULL, &status);
     PRNT("Program created(%d)\n", status);
@@ -43,7 +43,7 @@ UBENCH_EX(string_search, naive_newline) {
     cl_device_id dev = *conf->device;
     printCompilerError(program, dev);
 
-    cl_kernel kernel = clCreateKernel(program, "search_naive_newline", &status);
+    cl_kernel kernel = clCreateKernel(program, "search_naive_register", &status);
     PRNT("Kernel created(%d)\n", status);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &cl_data);
@@ -66,7 +66,10 @@ UBENCH_EX(string_search, naive_newline) {
     }
     int x=0, i=0;
     while (i < bench_data->numLines) {
-        if (result[i] == 1) x++;
+        if (result[i] == 1) {
+            x++;
+//            PRNT("%d ", result[i]);
+        }
         i++;
     }
     PRNT("Occurrences %d\n", x);

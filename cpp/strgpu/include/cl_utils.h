@@ -96,6 +96,37 @@ int* splitByNewlineAndCalculateOffsets(char* text, int* numLines) {
     return res;
 }
 
+void splitByNewlineAndCalculateOffsets2(char* text, int* numLines, benchmark_data *b_data) {
+    int *startIndices;
+    int *endIndices;
+    startIndices = endIndices = NULL;
+    char *p = strtok (text, "\n");
+    *numLines = 0;
+    int first = 1;
+
+    while (p) {
+        startIndices = realloc(startIndices, sizeof (int) * ++(*numLines));
+        endIndices = realloc(endIndices, sizeof (int) * (*numLines));
+        if (startIndices == NULL || endIndices == NULL)
+            exit (-1);
+
+//        res[(*numLines)-1] = p-text;
+        int len = strlen(p);
+        if (first == 1) {
+            first = 0;
+            startIndices[(*numLines)-1] = 0;
+            endIndices[(*numLines)-1] = len-1;
+        } else {
+            startIndices[(*numLines)-1] = endIndices[(*numLines)-2]+1;
+            endIndices[(*numLines)-1] = endIndices[(*numLines)-2]+len+1;
+        }
+
+        p = strtok (NULL, "\n");
+    }
+    b_data->start_indices = startIndices;
+    b_data->offsets = endIndices;
+}
+
 void printCompilerError(cl_program program, cl_device_id device) {
     PRNT("OPENCL Compiler Logs:\n");
     cl_int status;
@@ -113,6 +144,22 @@ void printCompilerError(cl_program program, cl_device_id device) {
     PRNT("Status: %d\n", status);
 
     printf("Log: %s\n", log);
+}
+
+int* selectNotFoundIndices(int* indices, int numLines, int *notFound) {
+    int notFoundLen = 0;
+    int *notFoundIndicesLocal = NULL;
+    for(int i=0; i<numLines; i++) {
+        if(indices[i] == 0) {
+            notFoundLen++;
+            notFoundIndicesLocal = realloc(notFoundIndicesLocal, sizeof(int)*notFoundLen);
+            if(notFoundIndicesLocal == NULL) exit(-1);
+            notFoundIndicesLocal[notFoundLen-1] = i;
+        }
+    }
+    *notFound = notFoundLen;
+
+    return notFoundIndicesLocal;
 }
 
 #endif

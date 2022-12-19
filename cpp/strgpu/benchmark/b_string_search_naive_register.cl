@@ -1,4 +1,4 @@
-__kernel void search_naive_newline(
+__kernel void search_naive_register(
 __global char *data,
 __global char *pattern,
 int patternLen,
@@ -7,6 +7,9 @@ __global int *offsets) {
     int idx = get_global_id(0);
     int begin, end, j, found;
     found = 0;
+
+    char4 vp = vload4(0, pattern);
+    char4 vs;
 
     // first line
     if (idx == 0) {
@@ -18,13 +21,11 @@ __global int *offsets) {
 
     for(int i=begin; i<=end; i++) {
         j = 0;
-        while(j < patternLen && data[j+i] == pattern[j]) {
-            j++;
-        }
-        if(j == patternLen) {
+        vs = vload4(0, data+i);
+
+        if((vs.x == vp.x) && (vs.y == vp.y) && (vs.z == vp.z) && (vs.w == vp.w)) {
             result[idx] = 1;
             found = 1;
-
         }
 
     }
