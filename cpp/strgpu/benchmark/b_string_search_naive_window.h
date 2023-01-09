@@ -1,13 +1,13 @@
-#ifndef STRGPU_B_STRING_SEARCH_NAIVE_REGISTER_H
-#define STRGPU_B_STRING_SEARCH_NAIVE_REGISTER_H
+#ifndef STRGPU_B_STRING_SEARCH_NAIVE_WINDOW_H
+#define STRGPU_B_STRING_SEARCH_NAIVE_WINDOW_H
 
 #include "ubench.h"
 #include "opencl_helpers.h"
 #include "cl_utils.h"
 
 
-UBENCH_EX(string_search, naive_newline_register) {
-    printf("\t########## Benchmark - String Search Naive Newline ##########\n");
+UBENCH_EX(string_search, naive_newline_window) {
+    printf("\t########## Benchmark - String Search Naive Window ##########\n");
     cl_int status;
     cl_context context = clCreateContext(NULL, 1, conf->device, NULL, NULL, &status);
     PRNT("Context created(%d)\n", status);
@@ -18,31 +18,33 @@ UBENCH_EX(string_search, naive_newline_register) {
     int result_size = sizeof(int)*bench_data->numLines;
     int offset_size = result_size;
     int *result = (int*)malloc(result_size);
+     
 
     cl_mem cl_data = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->data_size, NULL, &status);
-    cl_mem cl_pattern = clCreateBuffer(context, CL_MEM_READ_ONLY, bench_data->pattern_size, NULL, &status);
+    cl_mem cl_pattern = clCreateBuffer(context, CL_MEM_READ_ONLY, 8, NULL, &status);
     cl_mem cl_result = clCreateBuffer(context, CL_MEM_READ_WRITE, result_size, NULL, &status);
     cl_mem cl_offsets = clCreateBuffer(context, CL_MEM_READ_ONLY, offset_size, NULL, &status);
     PRNT("Buffers created(%d)\n", status);
 
     status = clEnqueueWriteBuffer(cmdQueue, cl_data, CL_FALSE, 0, bench_data->data_size, bench_data->data, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, cl_pattern, CL_FALSE, 0, bench_data->pattern_size, bench_data->pattern, 0, NULL, NULL);
+    PRNT("Buffers written1(%d)\n", status);
+    status = clEnqueueWriteBuffer(cmdQueue, cl_pattern, CL_FALSE, 0, 8, "commcomm", 0, NULL, NULL);
+    PRNT("Buffers written2(%d)\n", status);
     status = clEnqueueWriteBuffer(cmdQueue, cl_result, CL_FALSE, 0, result_size, result, 0, NULL, NULL);
+    PRNT("Buffers written3(%d)\n", status);
     status = clEnqueueWriteBuffer(cmdQueue, cl_offsets, CL_FALSE, 0, offset_size, bench_data->offsets, 0, NULL, NULL);
-    PRNT("Buffers written(%d)\n", status);
+    PRNT("Buffers written4(%d)\n", status);
 
-    char* src = readProgramFile("../benchmark/b_string_search_naive_register.cl");
+    char* src = readProgramFile("../benchmark/b_string_search_naive_window.cl");
 
     cl_program program = clCreateProgramWithSource(context, 1, &src, NULL, &status);
     PRNT("Program created(%d)\n", status);
-
+    printCompilerError(program, *conf->device);
     status = clBuildProgram(program, 1, conf->device, NULL, NULL, NULL);
     PRNT("Program built(%d)\n", status);
+    printCompilerError(program, *conf->device);
 
-    cl_device_id dev = *conf->device;
-    printCompilerError(program, dev);
-
-    cl_kernel kernel = clCreateKernel(program, "search_naive_register", &status);
+    cl_kernel kernel = clCreateKernel(program, "search_naive_window", &status);
     PRNT("Kernel created(%d)\n", status);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &cl_data);

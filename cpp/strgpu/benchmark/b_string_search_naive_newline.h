@@ -28,7 +28,7 @@ UBENCH_EX(string_search, naive_newline) {
 
     status = clEnqueueWriteBuffer(cmdQueue, cl_data, CL_FALSE, 0, bench_data->data_size, bench_data->data, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmdQueue, cl_pattern, CL_FALSE, 0, bench_data->pattern_size, bench_data->pattern, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, cl_result, CL_FALSE, 0, bench_data->data_size*sizeof(int), result, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, cl_result, CL_FALSE, 0, result_size, result, 0, NULL, NULL);
     status = clEnqueueWriteBuffer(cmdQueue, cl_offsets, CL_FALSE, 0, offset_size, bench_data->offsets, 0, NULL, NULL);
     PRNT("Buffers written(%d)\n", status);
 

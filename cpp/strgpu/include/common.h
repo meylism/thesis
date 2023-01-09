@@ -1,4 +1,4 @@
-#define CL_TARGET_OPENCL_VERSION 200
+#define CL_TARGET_OPENCL_VERSION 110
 
 // defaults to PLATFORM 0
 #ifndef PLATFORM
