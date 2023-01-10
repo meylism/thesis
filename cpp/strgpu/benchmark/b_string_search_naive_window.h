@@ -35,7 +35,7 @@ UBENCH_EX(string_search, naive_newline_window) {
     status = clEnqueueWriteBuffer(cmdQueue, cl_offsets, CL_FALSE, 0, offset_size, bench_data->offsets, 0, NULL, NULL);
     PRNT("Buffers written4(%d)\n", status);
 
-    char* src = readProgramFile("../benchmark/b_string_search_naive_window.cl");
+    char* src = readProgramFile("../benchmark/b_string_search_naive_window4.cl");
 
     cl_program program = clCreateProgramWithSource(context, 1, &src, NULL, &status);
     PRNT("Program created(%d)\n", status);

@@ -14,9 +14,9 @@ UBENCH_STATE();
 //#include "b_string_search_naive.h"
 //#include "b_string_search_naive_newline.h"
 //#include "b_string_search_naive_register.h"
-#include "b_string_search_naive_split.h"
-#include "b_string_search_naive_split3.h"
-//#include "b_string_search_naive_window.h"
+//#include "b_string_search_naive_split.h"
+//#include "b_string_search_naive_split3.h"
+#include "b_string_search_naive_window.h"
 
 // Benchmarks - end
 
@@ -62,12 +62,12 @@ configuration* init_conf(opencl_stub *lstub) {
 
     // uncomment corresponding device to select
     // cpu
-//    lconf->device = lstub->cpu;
-//    lconf->localSize[0] = 10;
+    lconf->device = lstub->cpu;
+    lconf->localSize[0] = 10;
 
     // gpu
-    lconf->device = lstub->gpu;
-    lconf->localSize[0] = 32;
+//    lconf->device = lstub->gpu;
+//    lconf->localSize[0] = 100;
 
     return lconf;
 }
